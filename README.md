@@ -10,7 +10,19 @@ dotnet publish -c Release -o publish
 
 This produces `publish\LolGuard.exe`, a single self-contained file. The target PC does not need .NET installed.
 
-## Install (on the target PC)
+## One-click install (recommended)
+
+`.\build-kit.ps1` builds `dist\LolGuard-Install.zip`, which holds `LolGuard.exe` and `Install.bat`.
+
+On the target PC:
+
+1. Copy the zip over and extract it anywhere, for example the Desktop.
+2. Double-click `Install.bat`. Click **Yes** when Windows asks for administrator permission.
+3. The window shows the status and waits for a key press.
+
+It installs in the default mode (`instant`). Running it again updates the service and keeps the existing `config.json`. For a grace period, run `LolGuard.exe delay 10` from an administrator PowerShell.
+
+## Manual install (on the target PC)
 
 1. Copy `LolGuard.exe` to the PC, in any folder.
 2. Open PowerShell with **Run as administrator**.
