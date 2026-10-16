@@ -59,6 +59,7 @@ On this branch, the output should look like this (LoL not running):
 
 ```text
 Service:   Running
+Enabled:   yes
 Mode:      instant
 Allowed:   no
 Watching:  League of Legends.exe, LeagueClient.exe, LeagueClientUx.exe, LeagueClientUxRender.exe
@@ -80,6 +81,8 @@ Run these from an administrator PowerShell, after `$sos` is set as in step 4:
 | `& $sos delay 10` | Close LoL 10 minutes after it opens |
 | `& $sos allow 30` | Let LoL run for 30 minutes, then enforce again |
 | `& $sos allow off` | Cancel an allowance |
+| `& $sos disable` | Stop the service until you run `enable`. It does not restart on its own |
+| `& $sos enable` | Turn the service back on and start it |
 
 Running `Install.bat` again keeps the current mode and config.
 
@@ -107,7 +110,8 @@ With no config file, the guard uses this branch's defaults (instant mode, League
 
 - **"needs an Administrator prompt":** open PowerShell with **Run as administrator**. Every command needs it.
 - **`Install.bat` reports "Install failed":** read the message above the `Press any key` prompt, fix it, and run `Install.bat` again.
-- **`Service: Stopped` or `not installed`:** check `C:\ProgramData\SinOfSloth\guard.log`, then run `Start-Service SinOfSloth` in an administrator PowerShell.
+- **`Enabled: no`:** the service was turned off with `disable`. Run `& $sos enable` in an administrator PowerShell.
+- **`Service: Stopped` or `not installed`:** check `C:\ProgramData\SinOfSloth\guard.log`. If the service is installed and enabled, run `& $sos enable`. If it is not installed, run `Install.bat` again.
 - **LoL is not closed:** while LoL is open, run `& $sos status` and compare `Running:` with `Watching:`. If LoL runs under other process names, find them in Task Manager and add them to `processNames` (see [Limits](#limits)).
 - **VALORANT is blocked:** the PC still has Vanguard on its list. See [Upgrading a PC](#upgrading-a-pc).
 
@@ -161,6 +165,8 @@ cd <folder with SinOfSloth.exe>
 | `SinOfSloth.exe delay <minutes>` | Close LoL this many minutes after it opens (example: `delay 10`) |
 | `SinOfSloth.exe allow <minutes>` | Let LoL run for this long, then enforce again (example: `allow 30`) |
 | `SinOfSloth.exe allow off` | Cancel an allowance |
+| `SinOfSloth.exe disable` | Stop the service and keep it stopped until `enable` |
+| `SinOfSloth.exe enable` | Turn the service back on and start it |
 | `SinOfSloth.exe uninstall` | Stop and remove the service |
 
 Every command must be run from an administrator PowerShell. Without that, it exits with an error and changes nothing.
@@ -188,15 +194,23 @@ Riot Vanguard is not on this branch's list, so VALORANT can run.
 
 `SinOfSloth.exe status` prints the active list under "Watching".
 
+## Restart and disable
+
+- **Killing the process restarts it.** Ending the process in Task Manager, End process tree, `taskkill`, or a crash makes Windows start the service again 5 seconds later. This repeats every time.
+- **Stop requests are refused.** `sc stop`, `Stop-Service` and Services.msc cannot stop it. They return an error and the service keeps running.
+- **Disabling is done only with the admin commands.** `SinOfSloth.exe disable` writes `"disabled": true` to `config.json` and the service exits cleanly. Windows does not restart a clean exit, so it stays stopped until `SinOfSloth.exe enable`.
+- `SinOfSloth.exe install` also clears the disabled flag, so reinstalling turns the service on.
+- The service starts at boot unless it is disabled. Windows shutdown still stops it normally.
+
 ## Access control
 
 - Every management command checks for an elevated token before it does anything.
 - The config folder is readable and writable only by SYSTEM and Administrators.
-- Standard users cannot stop or reconfigure the service under default Windows permissions.
+- The service's permissions let only SYSTEM and Administrators start, stop, or configure it. Standard users cannot touch it.
 
 ## Limits
 
-- **Not a security boundary against an administrator.** An administrator account can always stop, reconfigure, or remove the service. So can anyone who boots the PC into Safe Mode or from other media.
+- **Not a security boundary against an administrator.** An administrator can still reconfigure or remove the service with `sc.exe` (for example `sc.exe config` or `sc.exe delete`), edit `config.json`, or boot the PC into Safe Mode or from other media. The restart and disable rules stop ordinary stop and kill commands, not these.
 - **Not invisible.** The service appears in `services.msc` and Task Manager for anyone who looks. It has no user interface.
 - **VALORANT is not blocked on this branch.** Riot Vanguard is not on the list, so VALORANT and its Vanguard services keep running. The guard only closes League processes.
 - **League's process names are unverified.** They follow Riot's usual naming and have not been checked against an install on the test PC. Check Task Manager while LoL is open and edit `processNames` if they differ.

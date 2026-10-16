@@ -10,9 +10,12 @@ public sealed class Guard : BackgroundService
 {
     private static readonly TimeSpan Poll = TimeSpan.FromMilliseconds(500);
 
+    private readonly IHostApplicationLifetime _lifetime;
     private Settings? _lastGood;
     private string? _lastError;
     private DateTime? _armedAtUtc; // when the current delay countdown started
+
+    public Guard(IHostApplicationLifetime lifetime) => _lifetime = lifetime;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -38,6 +41,14 @@ public sealed class Guard : BackgroundService
     private void Tick(DateTime nowUtc)
     {
         var settings = LoadSettings();
+        if (settings.Disabled)
+        {
+            // A host that ends on its own exits cleanly, and the SCM does not restart a clean exit.
+            Log.Write("Disabled in config.json. Stopping.");
+            _lifetime.StopApplication();
+            return;
+        }
+
         var running = FindRunning(settings.ProcessNames);
 
         if (running.Count == 0 || settings.IsAllowed(nowUtc))

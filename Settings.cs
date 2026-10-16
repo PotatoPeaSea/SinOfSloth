@@ -20,6 +20,9 @@ public sealed class Settings
     public DateTime? AllowUntilUtc { get; set; }
     public List<string> ProcessNames { get; set; } = DefaultProcessNames();
 
+    // Written only by the "disable" and "enable" admin commands. While true, the service exits cleanly and stays stopped.
+    public bool Disabled { get; set; }
+
     // %ProgramData%\SinOfSloth by default. SINOFSLOTH_HOME overrides it, which is handy for testing.
     public static string Home { get; } =
         Environment.GetEnvironmentVariable("SINOFSLOTH_HOME") is { Length: > 0 } custom

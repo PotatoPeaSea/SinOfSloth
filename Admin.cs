@@ -26,6 +26,8 @@ public static class Admin
                 "instant" => Change(s => s.Mode = GuardMode.Instant, "Mode: instant. LoL is closed as soon as it opens."),
                 "delay" => Delay(args),
                 "allow" => Allow(args),
+                "disable" => Disable(),
+                "enable" => Enable(),
                 "help" or "-h" or "--help" => Usage(0),
                 _ => Usage(1),
             };
@@ -57,10 +59,14 @@ public static class Admin
         Directory.CreateDirectory(Settings.Home);
         LockDownFolder(Settings.Home);
         if (!File.Exists(Settings.ConfigPath)) new Settings().Save();
+        SetDisabled(false); // installing turns the service on, even if it was disabled before
 
         ToolRun("sc.exe", "create", Settings.ServiceName, "binPath=", $"\"{target}\"", "start=", "auto", "DisplayName=", Settings.DisplayName);
         ToolRun("sc.exe", "description", Settings.ServiceName, "Closes League of Legends when it opens. Managed with SinOfSloth.exe (Administrators only).");
         ToolRun("sc.exe", "failure", Settings.ServiceName, "reset=", "86400", "actions=", "restart/5000/restart/5000/restart/5000");
+        ToolRun("sc.exe", "failureflag", Settings.ServiceName, "1"); // restart on any failure, not only crashes
+        // Only SYSTEM and Administrators may start, stop, query or configure the service.
+        ToolRun("sc.exe", "sdset", Settings.ServiceName, "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)");
 
         using var service = new ServiceController(Settings.ServiceName);
         service.Start();
@@ -102,7 +108,10 @@ public static class Admin
             : string.Join(", ", running.Select(p => $"{p.ProcessName} ({p.Id})"));
         running.ForEach(p => p.Dispose());
 
+        var enabled = settings.Disabled ? "no (use enable to turn it back on)" : "yes";
+
         Console.WriteLine($"Service:   {ServiceState()}");
+        Console.WriteLine($"Enabled:   {enabled}");
         Console.WriteLine($"Mode:      {mode}");
         Console.WriteLine($"Allowed:   {allowed}");
         Console.WriteLine($"Watching:  {string.Join(", ", settings.ProcessNames)}");
@@ -173,19 +182,59 @@ public static class Admin
         return service.Status.ToString();
     }
 
+    private static int Disable()
+    {
+        if (!ServiceExists()) return Fail("Not installed. Run install first.");
+
+        SetDisabled(true);
+        WaitUntilStopped();
+        Console.WriteLine("Disabled. SinOfSloth is stopped and will not restart. Turn it back on with: SinOfSloth.exe enable");
+        return 0;
+    }
+
+    private static int Enable()
+    {
+        if (!ServiceExists()) return Fail("Not installed. Run install first.");
+
+        SetDisabled(false);
+        using var service = new ServiceController(Settings.ServiceName);
+        if (service.Status == ServiceControllerStatus.Stopped) service.Start();
+        service.WaitForStatus(ServiceControllerStatus.Running, ServiceTimeout);
+        Console.WriteLine("Enabled. SinOfSloth is running and restarts if its process is killed.");
+        return 0;
+    }
+
+    // The service refuses SCM stop requests, so it is stopped through config.json instead. It reads the flag,
+    // exits cleanly, and a clean exit is not restarted.
+    private static void StopService()
+    {
+        using (var service = new ServiceController(Settings.ServiceName))
+        {
+            if (service.Status == ServiceControllerStatus.Stopped) return;
+        }
+
+        SetDisabled(true);
+        WaitUntilStopped();
+    }
+
+    private static void WaitUntilStopped()
+    {
+        using var service = new ServiceController(Settings.ServiceName);
+        service.WaitForStatus(ServiceControllerStatus.Stopped, ServiceTimeout);
+    }
+
+    private static void SetDisabled(bool disabled)
+    {
+        var settings = Settings.Read();
+        settings.Disabled = disabled;
+        settings.Save();
+    }
+
     private static void RemoveService()
     {
         if (!ServiceExists()) return;
 
-        using (var service = new ServiceController(Settings.ServiceName))
-        {
-            if (service.Status != ServiceControllerStatus.Stopped)
-            {
-                service.Stop();
-                service.WaitForStatus(ServiceControllerStatus.Stopped, ServiceTimeout);
-            }
-        }
-
+        StopService();
         ToolRun("sc.exe", "delete", Settings.ServiceName);
 
         // The SCM keeps the entry until open handles close. Wait so a re-create does not fail.
@@ -220,6 +269,8 @@ public static class Admin
               delay <minutes>    close LoL this many minutes after it opens
               allow <minutes>    let LoL run for this long, then enforce again
               allow off          cancel an allowance
+              disable            stop the service and keep it stopped until enable
+              enable             turn the service back on and start it
             """);
         return exitCode;
     }
