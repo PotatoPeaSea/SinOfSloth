@@ -28,6 +28,9 @@ public sealed class Settings
 
     public static string ConfigPath => Path.Combine(Home, "config.json");
 
+    public static string InstallDir =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LolGuard");
+
     public bool IsAllowed(DateTime nowUtc) => AllowUntilUtc is { } until && until > nowUtc;
 
     // Throws if the file exists but is broken, so admin commands never overwrite it silently.
