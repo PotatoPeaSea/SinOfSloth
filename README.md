@@ -76,7 +76,8 @@ The default watch list is used only when `config.json` does not exist yet. A PC 
 Default watch list:
 
 - League: `League of Legends.exe`, `LeagueClient.exe`, `LeagueClientUx.exe`, `LeagueClientUxRender.exe`
-- Riot Vanguard: `vgc.exe`, `vgtray.exe`, `vgm.exe` (the binaries in `C:\Program Files\Riot Vanguard\`)
+
+Riot Vanguard is not on this branch's list, so VALORANT can run.
 
 `LolGuard.exe status` prints the active list under "Watching".
 
@@ -90,7 +91,7 @@ Default watch list:
 
 - **Not a security boundary against an administrator.** An administrator account can always stop, reconfigure, or remove the service. So can anyone who boots the PC into Safe Mode or from other media.
 - **Not invisible.** The service appears in `services.msc` and Task Manager for anyone who looks. It has no user interface.
-- **VALORANT is blocked too.** Riot Vanguard (`vgc.exe`, `vgtray.exe`, `vgm.exe`) is on the list, and VALORANT needs Vanguard. The kernel driver `vgk` is not a user-mode process, so the guard does not stop it.
+- **VALORANT is not blocked on this branch.** Riot Vanguard is not on the list, so VALORANT and its Vanguard services keep running. The guard only closes League processes.
 - **League's process names are unverified.** They follow Riot's usual naming and have not been checked against an install on the test PC. Check Task Manager while LoL is open and edit `processNames` if they differ.
 - **The Riot launcher is not on the list.** `RiotClientServices.exe` also starts VALORANT. Adding it would block VALORANT too.
 
