@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Security.Principal;
 using System.ServiceProcess;
 
-namespace LolGuard;
+namespace SinOfSloth;
 
 // Administrator commands. Every command needs an elevated (Run as administrator) prompt.
 public static class Admin
@@ -14,7 +14,7 @@ public static class Admin
     {
         // Checked before anything else, so a standard user cannot change config or the service.
         if (!IsAdministrator())
-            return Fail("LolGuard management needs an Administrator prompt (right-click the terminal > Run as administrator).");
+            return Fail("SinOfSloth management needs an Administrator prompt (right-click the terminal > Run as administrator).");
 
         try
         {
@@ -45,7 +45,7 @@ public static class Admin
     private static int Install()
     {
         var source = Environment.ProcessPath!;
-        var target = Path.Combine(Settings.InstallDir, "LolGuard.exe");
+        var target = Path.Combine(Settings.InstallDir, "SinOfSloth.exe");
 
         // Remove any previous version first, so its exe can be replaced.
         RemoveService();
@@ -59,7 +59,7 @@ public static class Admin
         if (!File.Exists(Settings.ConfigPath)) new Settings().Save();
 
         ToolRun("sc.exe", "create", Settings.ServiceName, "binPath=", $"\"{target}\"", "start=", "auto", "DisplayName=", Settings.DisplayName);
-        ToolRun("sc.exe", "description", Settings.ServiceName, "Closes League of Legends when it opens. Managed with LolGuard.exe (Administrators only).");
+        ToolRun("sc.exe", "description", Settings.ServiceName, "Closes League of Legends when it opens. Managed with SinOfSloth.exe (Administrators only).");
         ToolRun("sc.exe", "failure", Settings.ServiceName, "reset=", "86400", "actions=", "restart/5000/restart/5000/restart/5000");
 
         using var service = new ServiceController(Settings.ServiceName);
@@ -68,7 +68,7 @@ public static class Admin
 
         Console.WriteLine($"Installed and running: {target}");
         Console.WriteLine($"Config: {Settings.ConfigPath}");
-        Console.WriteLine("It starts automatically at boot. Check it with: LolGuard.exe status");
+        Console.WriteLine("It starts automatically at boot. Check it with: SinOfSloth.exe status");
         return 0;
     }
 
@@ -123,7 +123,7 @@ public static class Admin
     private static int Delay(string[] args)
     {
         if (!TryMinutes(args, out var minutes))
-            return Fail("Usage: LolGuard.exe delay <minutes>   (example: delay 10)");
+            return Fail("Usage: SinOfSloth.exe delay <minutes>   (example: delay 10)");
 
         return Change(s =>
         {
@@ -138,7 +138,7 @@ public static class Admin
             return Change(s => s.AllowUntilUtc = null, "Allowance cancelled. LoL is enforced again.");
 
         if (!TryMinutes(args, out var minutes))
-            return Fail("Usage: LolGuard.exe allow <minutes>   or   LolGuard.exe allow off");
+            return Fail("Usage: SinOfSloth.exe allow <minutes>   or   SinOfSloth.exe allow off");
 
         var until = DateTime.UtcNow.AddMinutes(minutes);
         return Change(s => s.AllowUntilUtc = until, $"LoL is allowed until {until.ToLocalTime():HH:mm}.");
@@ -211,9 +211,9 @@ public static class Admin
     private static int Usage(int exitCode)
     {
         Console.WriteLine("""
-            LolGuard  (Administrator only)
+            SinOfSloth  (Administrator only)
 
-              install            install and start the LolGuard service
+              install            install and start the SinOfSloth service
               uninstall          stop and remove the service
               status             show service state, settings and running LoL processes
               instant            close LoL as soon as it opens

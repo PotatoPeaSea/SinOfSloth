@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LolGuard;
+namespace SinOfSloth;
 
 public enum GuardMode
 {
@@ -12,24 +12,24 @@ public enum GuardMode
 // config.json in Home. Only SYSTEM (the service) and Administrators can read or write it.
 public sealed class Settings
 {
-    public const string ServiceName = "LolGuard";
-    public const string DisplayName = "LoL Guard";
+    public const string ServiceName = "SinOfSloth";
+    public const string DisplayName = "SinOfSloth";
 
     public GuardMode Mode { get; set; } = GuardMode.Instant;
     public double DelayMinutes { get; set; } = 5;
     public DateTime? AllowUntilUtc { get; set; }
     public List<string> ProcessNames { get; set; } = DefaultProcessNames();
 
-    // %ProgramData%\LolGuard by default. LOLGUARD_HOME overrides it, which is handy for testing.
+    // %ProgramData%\SinOfSloth by default. SINOFSLOTH_HOME overrides it, which is handy for testing.
     public static string Home { get; } =
-        Environment.GetEnvironmentVariable("LOLGUARD_HOME") is { Length: > 0 } custom
+        Environment.GetEnvironmentVariable("SINOFSLOTH_HOME") is { Length: > 0 } custom
             ? custom
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "LolGuard");
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "SinOfSloth");
 
     public static string ConfigPath => Path.Combine(Home, "config.json");
 
     public static string InstallDir =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LolGuard");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SinOfSloth");
 
     public bool IsAllowed(DateTime nowUtc) => AllowUntilUtc is { } until && until > nowUtc;
 

@@ -1,4 +1,4 @@
-namespace LolGuard;
+namespace SinOfSloth;
 
 // Append-only log at Home\guard.log. Never throws: logging must not stop the guard.
 public static class Log

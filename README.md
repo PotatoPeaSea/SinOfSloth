@@ -1,4 +1,4 @@
-# LolGuard
+# SinOfSloth
 
 A Windows service that closes League of Legends when it opens. It runs in the background as SYSTEM, starts at boot, and has no window or tray icon. Only administrators can change its settings or stop it.
 
@@ -17,11 +17,11 @@ Use it only on computers you administer, and let the people who use them know it
 dotnet publish -c Release -o publish
 ```
 
-This produces `publish\LolGuard.exe`, a single self-contained file. The target PC does not need .NET installed.
+This produces `publish\SinOfSloth.exe`, a single self-contained file. The target PC does not need .NET installed.
 
 ## One-click install (recommended)
 
-`.\build-kit.ps1` builds `dist\LolGuard-Install.zip`, which holds `LolGuard.exe` and `Install.bat`.
+`.\build-kit.ps1` builds `dist\SinOfSloth-Install.zip`, which holds `SinOfSloth.exe` and `Install.bat`.
 
 On the target PC:
 
@@ -29,32 +29,32 @@ On the target PC:
 2. Double-click `Install.bat`. Click **Yes** when Windows asks for administrator permission.
 3. The window shows the status and waits for a key press.
 
-It installs in the default mode (`instant`). Running it again updates the service and keeps the existing `config.json`. For a grace period, run `LolGuard.exe delay 10` from an administrator PowerShell.
+It installs in the default mode (`instant`). Running it again updates the service and keeps the existing `config.json`. For a grace period, run `SinOfSloth.exe delay 10` from an administrator PowerShell.
 
 ## Manual install (on the target PC)
 
-1. Copy `LolGuard.exe` to the PC, in any folder.
+1. Copy `SinOfSloth.exe` to the PC, in any folder.
 2. Open PowerShell with **Run as administrator**.
 3. Run:
 
 ```powershell
-cd <folder with LolGuard.exe>
-.\LolGuard.exe install
-.\LolGuard.exe status
+cd <folder with SinOfSloth.exe>
+.\SinOfSloth.exe install
+.\SinOfSloth.exe status
 ```
 
-`install` copies the exe to `C:\Program Files\LolGuard\`, creates `C:\ProgramData\LolGuard\`, registers the service, and starts it.
+`install` copies the exe to `C:\Program Files\SinOfSloth\`, creates `C:\ProgramData\SinOfSloth\`, registers the service, and starts it.
 
 ## Commands (administrator only)
 
 | Command | What it does |
 | --- | --- |
-| `LolGuard.exe status` | Service state, current mode, allowance, watch list, and any running LoL processes |
-| `LolGuard.exe instant` | Close LoL as soon as it opens |
-| `LolGuard.exe delay <minutes>` | Close LoL this many minutes after it opens (example: `delay 10`) |
-| `LolGuard.exe allow <minutes>` | Let LoL run for this long, then enforce again (example: `allow 30`) |
-| `LolGuard.exe allow off` | Cancel an allowance |
-| `LolGuard.exe uninstall` | Stop and remove the service |
+| `SinOfSloth.exe status` | Service state, current mode, allowance, watch list, and any running LoL processes |
+| `SinOfSloth.exe instant` | Close LoL as soon as it opens |
+| `SinOfSloth.exe delay <minutes>` | Close LoL this many minutes after it opens (example: `delay 10`) |
+| `SinOfSloth.exe allow <minutes>` | Let LoL run for this long, then enforce again (example: `allow 30`) |
+| `SinOfSloth.exe allow off` | Cancel an allowance |
+| `SinOfSloth.exe uninstall` | Stop and remove the service |
 
 Every command must be run from an administrator PowerShell. Without that, it exits with an error and changes nothing.
 
@@ -68,8 +68,8 @@ Every command must be run from an administrator PowerShell. Without that, it exi
 
 ## Files
 
-- `C:\ProgramData\LolGuard\config.json`: settings. Changes take effect within about a second. Keys are camelCase. Use `processNames` to change which processes are watched.
-- `C:\ProgramData\LolGuard\guard.log`: log of starts, closes, and config errors.
+- `C:\ProgramData\SinOfSloth\config.json`: settings. Changes take effect within about a second. Keys are camelCase. Use `processNames` to change which processes are watched.
+- `C:\ProgramData\SinOfSloth\guard.log`: log of starts, closes, and config errors.
 
 The default watch list is used only when `config.json` does not exist yet. A PC that already has a config keeps its old list. To switch an installed PC to a different branch's list, edit `processNames` in `config.json`, or delete the file before reinstalling.
 
@@ -79,7 +79,7 @@ Default watch list:
 
 Riot Vanguard is not on this branch's list, so VALORANT can run.
 
-`LolGuard.exe status` prints the active list under "Watching".
+`SinOfSloth.exe status` prints the active list under "Watching".
 
 ## Access control
 
@@ -98,7 +98,7 @@ Riot Vanguard is not on this branch's list, so VALORANT can run.
 ## Uninstall
 
 ```powershell
-.\LolGuard.exe uninstall
+.\SinOfSloth.exe uninstall
 ```
 
-Then delete `C:\Program Files\LolGuard\` and `C:\ProgramData\LolGuard\` as an administrator.
+Then delete `C:\Program Files\SinOfSloth\` and `C:\ProgramData\SinOfSloth\` as an administrator.
