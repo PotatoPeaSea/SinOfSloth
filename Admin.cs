@@ -187,6 +187,7 @@ public static class Admin
         if (!ServiceExists()) return Fail("Not installed. Run install first.");
 
         SetDisabled(true);
+        RequestStop();
         WaitUntilStopped();
         Console.WriteLine("Disabled. SinOfSloth is stopped and will not restart. Turn it back on with: SinOfSloth.exe enable");
         return 0;
@@ -214,7 +215,24 @@ public static class Admin
         }
 
         SetDisabled(true);
+        RequestStop();
         WaitUntilStopped();
+    }
+
+    // Current builds refuse this and stop through the flag. Older builds accept it and ignore the flag.
+    private static void RequestStop()
+    {
+        using var service = new ServiceController(Settings.ServiceName);
+        if (service.Status != ServiceControllerStatus.Running) return;
+
+        try
+        {
+            service.Stop();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            // Refused by the SCM. The flag is what stops the service.
+        }
     }
 
     private static void WaitUntilStopped()
