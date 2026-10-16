@@ -50,7 +50,12 @@ Every command must be run from an administrator PowerShell. Without that, it exi
 - `C:\ProgramData\LolGuard\config.json`: settings. Changes take effect within about a second. Keys are camelCase. Use `processNames` to change which processes are watched.
 - `C:\ProgramData\LolGuard\guard.log`: log of starts, closes, and config errors.
 
-Default watch list: `League of Legends.exe`, `LeagueClient.exe`, `LeagueClientUx.exe`, `LeagueClientUxRender.exe`.
+Default watch list:
+
+- League: `League of Legends.exe`, `LeagueClient.exe`, `LeagueClientUx.exe`, `LeagueClientUxRender.exe`
+- Riot Vanguard: `vgc.exe`, `vgtray.exe`, `vgm.exe` (the binaries in `C:\Program Files\Riot Vanguard\`)
+
+`LolGuard.exe status` prints the active list under "Watching".
 
 ## Access control
 
@@ -62,7 +67,8 @@ Default watch list: `League of Legends.exe`, `LeagueClient.exe`, `LeagueClientUx
 
 - **Not a security boundary against an administrator.** An administrator account can always stop, reconfigure, or remove the service. So can anyone who boots the PC into Safe Mode or from other media.
 - **Not invisible.** The service appears in `services.msc` and Task Manager for anyone who looks. It has no user interface.
-- **Process names are not yet verified against a real install.** The defaults follow Riot's usual names. Check Task Manager while LoL is open and edit `processNames` if they differ.
+- **VALORANT is blocked too.** Riot Vanguard (`vgc.exe`, `vgtray.exe`, `vgm.exe`) is on the list, and VALORANT needs Vanguard. The kernel driver `vgk` is not a user-mode process, so the guard does not stop it.
+- **League's process names are unverified.** They follow Riot's usual naming and have not been checked against an install on the test PC. Check Task Manager while LoL is open and edit `processNames` if they differ.
 - **The Riot launcher is not on the list.** `RiotClientServices.exe` also starts VALORANT. Adding it would block VALORANT too.
 
 ## Uninstall

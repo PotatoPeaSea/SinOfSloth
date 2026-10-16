@@ -56,6 +56,9 @@ public sealed class Settings
         "LeagueClient.exe",        // the client / lobby
         "LeagueClientUx.exe",      // client UI
         "LeagueClientUxRender.exe",
+        "vgc.exe",                 // Riot Vanguard service
+        "vgtray.exe",              // Riot Vanguard tray
+        "vgm.exe",                 // Riot Vanguard (in its install folder)
     ];
 
     // camelCase keys on disk. Matching is case-insensitive so hand-edited files still load.
