@@ -2,6 +2,15 @@
 
 A Windows service that closes League of Legends when it opens. It runs in the background as SYSTEM, starts at boot, and has no window or tray icon. Only administrators can change its settings or stop it.
 
+## Branches
+
+- **`master`** blocks League **and** Riot Vanguard. VALORANT needs Vanguard, so VALORANT is blocked too.
+- **`league-only`** blocks League only. Vanguard keeps running, so VALORANT can be played.
+
+Both branches share the same code. They differ only in the default watch list in `Settings.cs` and in the watch-list section of this README.
+
+Use it only on computers you administer, and let the people who use them know it is there.
+
 ## Build
 
 ```powershell
@@ -61,6 +70,8 @@ Every command must be run from an administrator PowerShell. Without that, it exi
 
 - `C:\ProgramData\LolGuard\config.json`: settings. Changes take effect within about a second. Keys are camelCase. Use `processNames` to change which processes are watched.
 - `C:\ProgramData\LolGuard\guard.log`: log of starts, closes, and config errors.
+
+The default watch list is used only when `config.json` does not exist yet. A PC that already has a config keeps its old list. To switch an installed PC to a different branch's list, edit `processNames` in `config.json`, or delete the file before reinstalling.
 
 Default watch list:
 
